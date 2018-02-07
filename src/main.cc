@@ -34,14 +34,14 @@ int main(){
 
     Constant::setLISPCHITZ(X_train);
     Algorithms learning;
-    learning.setAlg(4);
+    learning.setAlg(3);
     cout << "Fitting" << endl;
-    learning.fit(X_train,y_train);
-    learning.setAlg(2);
-    learning.fit(X_train,y_train);
-    learning.setAlg(5);
-    learning.fit(X_train,y_train);
-    learning.setAlg(6);
+//    learning.fit(X_train,y_train);
+//    learning.setAlg(2);
+//    learning.fit(X_train,y_train);
+//    learning.setAlg(5);
+//    learning.fit(X_train,y_train);
+//    learning.setAlg(6);
     learning.fit(X_train,y_train);
     cout << "Fitted" << endl;
 

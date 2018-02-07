@@ -174,7 +174,7 @@ VectorXd LearningAlgorithm::fit_GD(MatrixXd X, VectorXd Y, VectorXd W_init) {
         }
 
         VectorXd G = Gradient::logistic(X,Y,W);
-        W = W - step*G;
+        W = W + step*G;
         iter++;
                 if(iter % 50 == 0){
                 	cout << iter << endl;
@@ -189,9 +189,10 @@ VectorXd LearningAlgorithm::fit_SVRG(MatrixXd X, VectorXd Y, VectorXd W_init) {
     VectorXd W = W_init;
     VectorXd W_pre = W;
     long m = X.rows();
-    long M = 20;
+    long M = m;
     srand(time(NULL));
     for (long epoch = 1; epoch <= n_iters/M; epoch ++){
+    	cout << epoch << endl;
     	VectorXd mu_sum = VectorXd::Zero(X.cols());
     	W_pre = W;
     	for(long i = 0; i < m; i++){
@@ -207,13 +208,41 @@ VectorXd LearningAlgorithm::fit_SVRG(MatrixXd X, VectorXd Y, VectorXd W_init) {
     		int i =  rand()%m;
     		VectorXd g = Gradient::logistic_ex(X,Y,W,i);
     		VectorXd g_pre = Gradient::logistic_ex(X,Y,W_pre,i);
-    		W = W - step*(g-g_pre+mu);
+    		W = W + step*(g-g_pre+mu);
     	}
     	double loss = (W - W_pre).norm();
     	       if(loss < tol) break;
     }
     return  W;
 }
+VectorXd LearningAlgorithm::fit_SAG(MatrixXd X, VectorXd Y, VectorXd W_init) {
+    VectorXd W = W_init;
+    VectorXd W_pre = W;
+    long m = X.rows();
+    srand(time(NULL));
+    VectorXd p[m];
+    VectorXd sum = VectorXd::Zero(X.cols());
+    for(long i = 0; i < m; i++){
+    	p[i] = VectorXd::Zero(X.cols());
+    }
+    for (long iter = 1; iter <= n_iters; iter++){
+    	W_pre = W;
+    	double step =  Constant::ETA();
+    	if(Constant::L() > 0){
+    		 step = 1.0/(Constant::L()*pow((iter+1),0.7));
+    	        }
+    	int i =  rand()%m;
+    	VectorXd g = Gradient::logistic_ex(X,Y,W,i);
+//    	VectorXd g_pre = Gradient::logistic_ex(X,Y,W_pre,i);
+    	W = W + (double)(step/(double)m)*(g-p[i]+sum);
+    	sum = sum - p[i] + g;
+    	p[i] = g;
+//    	double loss = (W - W_pre).norm();
+//    	       if(loss < tol) break;
+    }
+    return  W;
+}
+
 
 LearningAlgorithm::LearningAlgorithm(double tol, long n_iters, int alg) : tol(tol), n_iters(n_iters), alg(alg) {
     LearningAlgorithm::tol = tol;

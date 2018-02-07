@@ -38,6 +38,7 @@ private:
     VectorXd fit_SGD(MatrixXd X, VectorXd Y, VectorXd W_init);
     VectorXd fit_GD(MatrixXd X, VectorXd Y, VectorXd W_init);
     VectorXd fit_SVRG(MatrixXd X, VectorXd Y, VectorXd W_init);
+    VectorXd fit_SAG(MatrixXd X, VectorXd Y, VectorXd W_init);
     VectorXd fit_MiniBatchSGD(MatrixXd X, VectorXd Y, VectorXd W_init);
     VectorXd fit_Hogwild(MatrixXd X, VectorXd Y, VectorXd W_init);
     VectorXd fit_HogBatch(MatrixXd X, VectorXd Y, VectorXd W_init);
