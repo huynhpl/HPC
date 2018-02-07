@@ -61,7 +61,7 @@ VectorXd LearningAlgorithm::fit_SGD(MatrixXd X, VectorXd Y, VectorXd W_init) {
 VectorXd LearningAlgorithm::fit_MiniBatchSGD(MatrixXd X, VectorXd Y, VectorXd W_init){
 	double tStart = omp_get_wtime();
 	cout << "Learning MiniBatch..." << endl;
-	int SIZE = 60;
+	int SIZE = 4;
 	long num_samples = X.rows();
 	long num_features =  X.cols();
 	long iter = 0;
@@ -72,11 +72,11 @@ VectorXd LearningAlgorithm::fit_MiniBatchSGD(MatrixXd X, VectorXd Y, VectorXd W_
 	VectorXd W_tid[100];
 //	omp_set_num_threads(4);
 while(iter <= n_iters){
-	for(int i = 0; i < 10; i++) W_tid[i] = VectorXd::Zero(X.cols());
+	for(int i = 0; i < 20; i++) W_tid[i] = VectorXd::Zero(X.cols());
 	 double step = Constant::ETA();
 	 long start =  rand()%(num_samples-SIZE+1);
 // Parallel for computing batch SGD
-		#pragma omp parallel for schedule(dynamic) num_threads(4)
+		#pragma omp parallel for schedule(dynamic) num_threads(2)
 		for(int index = start; index < start + SIZE; index++){
 			long TID = omp_get_thread_num();
 //			cout << TID << endl;
@@ -84,7 +84,7 @@ while(iter <= n_iters){
 		}
 //		for(int i = 0; i < num_features; i++) cout << W_tid[0][i] << "|";
 //		cout << endl;
-		#pragma omp parallel for schedule(static) num_threads(4)
+		#pragma omp parallel for schedule(static) num_threads(2)
 		for(long f = 0; f < num_features; f++){
 			for(int t = 0; t < omp_get_num_threads(); t++){
 				W[f] = W[f] + W_tid[t][f];
@@ -114,13 +114,13 @@ VectorXd LearningAlgorithm::fit_Hogwild(MatrixXd X, VectorXd Y, VectorXd W_init)
 	    long iter = 1;
 	    long n =  X.rows();
 	    srand(time(NULL));
-		#pragma omp parallel for schedule(dynamic) num_threads(4)
+		#pragma omp parallel for schedule(dynamic) num_threads(2)
 	    for(iter = 1; iter <= n_iters; iter++){
 	        int i =  rand()%n;
 	        double step =  Constant::ETA();
-	        if(Constant::L() > 0){
-	            step = 1.0/(Constant::L()*pow((iter+1),0.7));
-	        }
+//	        if(Constant::L() > 0){
+//	            step = 1.0/(Constant::L()*pow((iter+1),0.7));
+//	        }
 	        VectorXd G = Gradient::logistic_ex(X,Y,W,i);
 	        W = W + step*G;
 	    }
@@ -131,7 +131,7 @@ VectorXd LearningAlgorithm::fit_Hogwild(MatrixXd X, VectorXd Y, VectorXd W_init)
 }
 VectorXd LearningAlgorithm::fit_HogBatch(MatrixXd X, VectorXd Y, VectorXd W_init){
 	cout << "Learning HogBatch ..." << endl;
-	clock_t tStart = clock();
+	double tStart = omp_get_wtime();
 		int SIZE = 4;
 		long num_samples = X.rows();
 		long num_features =  X.cols();
@@ -141,11 +141,11 @@ VectorXd LearningAlgorithm::fit_HogBatch(MatrixXd X, VectorXd Y, VectorXd W_init
 		VectorXd W_pre = W_init;
 		W = VectorXd::Zero(X.cols());
 		VectorXd W_tid[100];
-	#pragma omp parallel for schedule(dynamic)
+	#pragma omp parallel for schedule(dynamic) num_threads(2)
 	for(iter = 1; iter <= n_iters; iter = iter + SIZE){
 		for(int i = 0; i < 10; i++) W_tid[i] = VectorXd::Zero(X.cols());
 		 double step = Constant::ETA();
-		 long start =  rand()%(num_samples/SIZE);
+		 long start =  rand()%(num_samples-SIZE+1);
 			for(int index = start; index < start + SIZE; index++){
 				long TID = omp_get_thread_num();
 				W_tid[TID] = W_tid[TID] + step * Gradient::logistic_ex(X,Y,W,index);
@@ -153,13 +153,13 @@ VectorXd LearningAlgorithm::fit_HogBatch(MatrixXd X, VectorXd Y, VectorXd W_init
 
 			for(long f = 0; f < num_features; f++){
 				for(int t = 0; t < omp_get_num_threads(); t++){
-					W[f] = W[f] - W_tid[t][f];
+					W[f] = W[f] + W_tid[t][f];
 				}
 			}
 	}
 	cout << "Learned HogBatch" << endl;
-	clock_t tEnd = clock();
-	cout << "Time: " << (double)((tEnd -  tStart)/CLOCKS_PER_SEC) << endl;
+	double tEnd = omp_get_wtime();
+	cout << "Time: " << (double)(tEnd -  tStart) << endl;
 	return W;
 }
 VectorXd LearningAlgorithm::fit_GD(MatrixXd X, VectorXd Y, VectorXd W_init) {

@@ -41,8 +41,8 @@ int main(){
     learning.fit(X_train,y_train);
     learning.setAlg(5);
     learning.fit(X_train,y_train);
-//    learning.setAlg(1);
-//    learning.fit(X_train,y_train);
+    learning.setAlg(6);
+    learning.fit(X_train,y_train);
     cout << "Fitted" << endl;
 
     VectorXd y_predict = learning.predict(X_train);
