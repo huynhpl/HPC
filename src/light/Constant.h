@@ -16,6 +16,7 @@ public :
     static long MAX_ITER();
     static double L();
     static double ETA();
+    static int get_num_threads();
 
 public:
     static double LISPCHITZ;

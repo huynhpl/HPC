@@ -11,6 +11,7 @@ double Constant::L() {return 0.25;}
 long Constant::MAX_ITER() {return 20000;}
 double Constant::TOLERANCE() {return 0.0001;}
 double Constant::ETA() {return 1/Constant::LISPCHITZ ? Constant::LISPCHITZ > 0: 0.05;}
+int Constant::get_num_threads(){return 2;}
 double Constant::LISPCHITZ = 0;
 void Constant::setLISPCHITZ(MatrixXd X) {
     long n =  X.rows();

@@ -13,9 +13,10 @@ using namespace std;
 #define GD 1
 #define SGD 2
 #define SVRG 3
-#define MiniBatchSGD 4
-#define Hogwild 5
-#define HogBatch 6
+#define SAG 4
+#define MiniBatchSGD 5
+#define Hogwild 6
+#define HogBatch 7
 
 class LearningAlgorithm {
 public:
@@ -24,6 +25,7 @@ public:
 private:
     double tol;
     long n_iters;
+    int n_threads;
 public:
     virtual ~LearningAlgorithm();
 

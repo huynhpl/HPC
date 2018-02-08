@@ -25,6 +25,7 @@ VectorXd LearningAlgorithm::fit(MatrixXd X, VectorXd Y, VectorXd W_init, int alg
         case MiniBatchSGD: return fit_MiniBatchSGD(X,Y,W_init);
         case Hogwild: return fit_Hogwild(X,Y,W_init);
         case HogBatch: return fit_HogBatch(X,Y,W_init);
+        case SAG: return fit_SAG(X,Y,W_init);
         default: return fit_SGD(X,Y,W_init);
     }
 }
@@ -70,13 +71,13 @@ VectorXd LearningAlgorithm::fit_MiniBatchSGD(MatrixXd X, VectorXd Y, VectorXd W_
 	W = VectorXd::Zero(X.cols());
 	VectorXd W_pre = W_init;
 	VectorXd W_tid[100];
-//	omp_set_num_threads(4);
+	omp_set_num_threads(n_threads);
 while(iter <= n_iters){
 	for(int i = 0; i < 20; i++) W_tid[i] = VectorXd::Zero(X.cols());
 	 double step = Constant::ETA();
 	 long start =  rand()%(num_samples-SIZE+1);
 // Parallel for computing batch SGD
-		#pragma omp parallel for schedule(dynamic) num_threads(2)
+		#pragma omp parallel for schedule(dynamic)
 		for(int index = start; index < start + SIZE; index++){
 			long TID = omp_get_thread_num();
 //			cout << TID << endl;
@@ -84,7 +85,7 @@ while(iter <= n_iters){
 		}
 //		for(int i = 0; i < num_features; i++) cout << W_tid[0][i] << "|";
 //		cout << endl;
-		#pragma omp parallel for schedule(static) num_threads(2)
+		#pragma omp parallel for schedule(static)
 		for(long f = 0; f < num_features; f++){
 			for(int t = 0; t < omp_get_num_threads(); t++){
 				W[f] = W[f] + W_tid[t][f];
@@ -114,7 +115,8 @@ VectorXd LearningAlgorithm::fit_Hogwild(MatrixXd X, VectorXd Y, VectorXd W_init)
 	    long iter = 1;
 	    long n =  X.rows();
 	    srand(time(NULL));
-		#pragma omp parallel for schedule(dynamic) num_threads(2)
+	    omp_set_num_threads(n_threads);
+		#pragma omp parallel for schedule(dynamic)
 	    for(iter = 1; iter <= n_iters; iter++){
 	        int i =  rand()%n;
 	        double step =  Constant::ETA();
@@ -141,6 +143,7 @@ VectorXd LearningAlgorithm::fit_HogBatch(MatrixXd X, VectorXd Y, VectorXd W_init
 		VectorXd W_pre = W_init;
 		W = VectorXd::Zero(X.cols());
 		VectorXd W_tid[100];
+		omp_set_num_threads(n_threads);
 	#pragma omp parallel for schedule(dynamic) num_threads(2)
 	for(iter = 1; iter <= n_iters; iter = iter + SIZE){
 		for(int i = 0; i < 10; i++) W_tid[i] = VectorXd::Zero(X.cols());
@@ -254,6 +257,7 @@ LearningAlgorithm::LearningAlgorithm() {
     tol = Constant::TOLERANCE();
     n_iters = Constant::MAX_ITER();
     alg = SGD;
+    n_threads = Constant::get_num_threads();
 }
 
 LearningAlgorithm::~LearningAlgorithm() {
