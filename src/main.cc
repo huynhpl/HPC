@@ -15,7 +15,13 @@
 
 using namespace std;
 using namespace Eigen;
-
+#define GD 1
+#define SGD 2
+#define SVRG 3
+#define SAG 4
+#define MiniBatchSGD 5
+#define Hogwild 6
+#define HogBatch 7
 
 
 int main(){
@@ -34,15 +40,15 @@ int main(){
 
     Constant::setLISPCHITZ(X_train);
     Algorithms learning;
-    learning.setAlg(3);
+    learning.setAlg(MiniBatchSGD);
     cout << "Fitting" << endl;
-//    learning.fit(X_train,y_train);
-//    learning.setAlg(2);
-//    learning.fit(X_train,y_train);
-//    learning.setAlg(5);
-//    learning.fit(X_train,y_train);
-//    learning.setAlg(6);
     learning.fit(X_train,y_train);
+    learning.setAlg(SGD);
+    learning.fit(X_train,y_train);
+    learning.setAlg(Hogwild);
+    learning.fit(X_train,y_train);
+////    learning.setAlg(6);
+//    learning.fit(X_train,y_train);
     cout << "Fitted" << endl;
 
     VectorXd y_predict = learning.predict(X_train);

@@ -1,0 +1,14 @@
+/Debug/
+Debug
+.cproject
+.project
+.pydevproject
+.settings
+
+
+/.settings
+/data
+/Debug
+.cproject
+.project
+HPC.exe.stackdump

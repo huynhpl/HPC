@@ -2,7 +2,6 @@
 // Created by huynh on 1/31/2018.
 //
 
-#include "../eigen3/Eigen/Dense"
 #include <string>
 #include <iostream>
 #include <fstream>
