@@ -62,6 +62,7 @@ VectorXd LearningAlgorithm::fit_MiniBatchSGD(MatrixXd X, VectorXd Y, VectorXd W_
 	int SIZE = 64;
 //	cout << SIZE << endl;
 	long num_samples = X.rows();
+	n_threads = Constant::get_num_threads();
 	long num_features =  X.cols();
 	long iter = 0;
 	srand(time(NULL));
@@ -69,13 +70,13 @@ VectorXd LearningAlgorithm::fit_MiniBatchSGD(MatrixXd X, VectorXd Y, VectorXd W_
 	VectorXd W_pre = W_init;
 	VectorXd W_tid[100];
 	VectorXd Zero = VectorXd::Zero(X.cols());
-	omp_set_num_threads(8);
+	omp_set_num_threads(n_threads);
 while(iter <= n_iters){
 	for(int i = 0; i < 10; i++) W_tid[i] = Zero;
 	 double step = Constant::ETA();
 	 long start =  rand()%(num_samples-SIZE+1);
 // Parallel for computing batch SGD
-		#pragma omp parallel for schedule(dynamic) num_threads(8)
+		#pragma omp parallel for schedule(dynamic) num_threads(n_threads)
 		for(int index = start; index < start + SIZE; index++){
 			long TID = omp_get_thread_num();
 //			cout << TID << endl;
@@ -87,7 +88,7 @@ while(iter <= n_iters){
 			}
 
 		}
-		#pragma omp parallel for schedule(static) num_threads(8)
+		#pragma omp parallel for schedule(static) num_threads(n_threads)
 		for(long f = 0; f < num_features; f++){
 			for(int t = 0; t < omp_get_num_threads(); t++){
 				W[f] = W[f] + W_tid[t][f];
@@ -118,7 +119,7 @@ VectorXd LearningAlgorithm::fit_Hogwild(MatrixXd X, VectorXd Y, VectorXd W_init)
 	    long n =  X.rows();
 	    srand(time(NULL));
 	    omp_set_num_threads(n_threads);
-		#pragma omp parallel for schedule(dynamic)
+		#pragma omp parallel for schedule(dynamic) num_threads(n_threads)
 	    for(iter = 1; iter <= n_iters; iter++){
 	        int i =  rand()%n;
 	        double step =  Constant::ETA();
@@ -147,7 +148,7 @@ VectorXd LearningAlgorithm::fit_HogBatch(MatrixXd X, VectorXd Y, VectorXd W_init
 		W = VectorXd::Zero(X.cols());
 		VectorXd W_tid[100];
 		omp_set_num_threads(n_threads);
-	#pragma omp parallel for schedule(dynamic) num_threads(2)
+	#pragma omp parallel for schedule(dynamic) num_threads(n_threads)
 	for(iter = 1; iter <= n_iters; iter = iter + SIZE){
 		for(int i = 0; i < 10; i++) W_tid[i] = VectorXd::Zero(X.cols());
 		 double step = Constant::ETA();
